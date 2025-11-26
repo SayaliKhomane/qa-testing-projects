@@ -1,0 +1,114 @@
+import java.util.ArrayList;
+import java.util.List;
+
+public class SolidCabBooking {
+
+    static class Cab {
+        int id;
+        String type;
+        boolean available;
+
+        public Cab(int id, String type) {
+            this.id = id;
+            this.type = type;
+            this.available = true;
+        }
+    }
+
+    static class Driver {
+        int id;
+        String name;
+        Integer assignedCabId;
+
+        public Driver(int id, String name) {
+            this.id = id;
+            this.name = name;
+            this.assignedCabId = null;
+        }
+    }
+
+    static class Booking {
+        String customerName;
+        String pickup;
+        String drop;
+        String tripType;
+        int cabId;
+        int driverId;
+        String status;
+
+        public Booking(String customerName, String pickup, String drop, String tripType,
+                       int cabId, int driverId) {
+            this.customerName = customerName;
+            this.pickup = pickup;
+            this.drop = drop;
+            this.tripType = tripType;
+            this.cabId = cabId;
+            this.driverId = driverId;
+            this.status = "Confirmed";
+        }
+
+        @Override
+        public String toString() {
+            return "Booking{" +
+                    "customerName='" + customerName + '\'' +
+                    ", pickup='" + pickup + '\'' +
+                    ", drop='" + drop + '\'' +
+                    ", tripType='" + tripType + '\'' +
+                    ", cabId=" + cabId +
+                    ", driverId=" + driverId +
+                    ", status='" + status + '\'' +
+                    '}';
+        }
+    }
+
+    List<Cab> cabs = new ArrayList<>();
+    List<Driver> drivers = new ArrayList<>();
+    List<Booking> bookings = new ArrayList<>();
+
+    public SolidCabBooking() {
+        cabs.add(new Cab(1, "Sedan"));
+        cabs.add(new Cab(2, "SUV"));
+        drivers.add(new Driver(1, "Amit"));
+        drivers.add(new Driver(2, "Sunil"));
+    }
+
+    public Booking bookCab(String customerName, String pickup, String drop, String tripType)
+            throws Exception {
+        Cab availableCab = cabs.stream().filter(cab -> cab.available).findFirst().orElse(null);
+        if (availableCab == null) {
+            throw new Exception("No cabs available");
+        }
+        Driver availableDriver = drivers.stream().filter(driver -> driver.assignedCabId == null)
+                .findFirst().orElse(null);
+        if (availableDriver == null) {
+            throw new Exception("No drivers available");
+        }
+        availableCab.available = false;
+        availableDriver.assignedCabId = availableCab.id;
+
+        Booking booking = new Booking(customerName, pickup, drop, tripType, availableCab.id,
+                availableDriver.id);
+        bookings.add(booking);
+        return booking;
+    }
+
+    public List<Booking> getBookings() {
+        return bookings;
+    }
+
+    public static void main(String[] args) {
+        try {
+            SolidCabBooking service = new SolidCabBooking();
+            var booking1 = service.bookCab("John", "Pune", "Mumbai", "One-way");
+            System.out.println("Booking confirmed: " + booking1);
+
+            var booking2 = service.bookCab("Alice", "Pune", "Nashik", "Round-trip");
+            System.out.println("Booking confirmed: " + booking2);
+
+            System.out.println("All bookings:");
+            service.getBookings().forEach(System.out::println);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
